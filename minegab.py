@@ -20,6 +20,8 @@ def getprofile(username):
   userurl = 'https://gab.ai/users/' + username
   done = False
   while not done:
+    if debug:
+      print("retrieving " + userurl)
     r = requests.get(userurl)
     if r.status_code == 200:
       profile = json.loads(r.text)
@@ -49,6 +51,8 @@ def getfollowers(username):
   before = 0
   while length > 0:
     followerurl = 'https://gab.ai/users/' + username + '/followers?before=' + str(before)
+    if debug:
+      print("retrieving " + followerurl)
     r = requests.get(followerurl)
     if r.status_code == 200:
       followerset = json.loads(r.text)
@@ -66,7 +70,7 @@ def getfollowers(username):
       if debug:
         print("hit the rate limiting, waiting 5 seconds...")
       length = 30
-      before -= 30
+      before -= 30 
       time.sleep(5)
     else:
       print("failed to mine followers for " + username + " - call to " + followerurl + " returned: " + str(r.status_code))
@@ -82,6 +86,8 @@ def getfollowing(username):
   before = 0
   while length > 0:
     followingurl = 'https://gab.ai/users/' + username + '/following?before=' + str(before)
+    if debug:
+      print("retrieving " + followingurl)
     r = requests.get(followingurl)
     if r.status_code == 200:
       followingset = json.loads(r.text)
@@ -116,6 +122,8 @@ def gettimeline(username):
     feedurl = 'https://gab.ai/api/feed/' + username
     if before:
       feedurl = 'https://gab.ai/api/feed/' + username + '?before=' + before
+    if debug:
+      print("retrieving " + feedurl)
     r = requests.get(feedurl)
     if r.status_code == 200:
       contentset = json.loads(r.text)
@@ -151,6 +159,8 @@ def getcomments(post):
   feedurl = 'https://gab.ai/posts/' + str(post) + '/comments/index?limit=1000'
   done = False
   while not done:
+    if debug:
+      print("retrieving " + feedurl)
     r = requests.get(feedurl)
     if r.status_code == 200:
       comments = json.loads(r.text)
@@ -219,7 +229,7 @@ def main(argv):
   db.profiles.create_index('id', unique=True)
   db.discovered.create_index('id', unique=True)
   db.followers.create_index([('follower_id',1),('following_id',1)], unique=True)
-  db.posts.create_index([('post.actuser.id',1),('post.id',1)], unique=True)
+  db.posts.create_index([('post.actuser.id',1),('post.id',1),('post.type',1)], unique=True)
   db.comments.create_index([('id',1),('user.id',1)], unique=True)
   shouldgetall = False
   username = False

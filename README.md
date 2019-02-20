@@ -22,6 +22,10 @@ Once the first account has been processed, the -a parameter will tell the script
     ./minegab.py -a
 
 Keep running the script with -a untill no new accounts are discovered. The giant graph within gab.ai has now been scraped.
+The minegab.py will give verbose output with the -d flag. Note that this might contain special characters that could be problematic to print on your terminal:
+
+    export PYTHONIOENCODING=UTF-8
+    ./minegab.py -da
 
 ### Processing
 
