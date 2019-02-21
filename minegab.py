@@ -7,6 +7,9 @@ import getopt
 import time
 import pymongo
 from pymongo import *
+import codecs
+#sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+#sys.stderr = codecs.getwriter('utf8')(sys.stderr)
 
 class Gabber:
   def __init__(self,id,username):
@@ -14,48 +17,72 @@ class Gabber:
     self.username = username
 
 
+def dbgmsg(e):
+  global debug
+  if debug:
+    print(e)
+
+
+def getfromgab(url):
+  global debug
+  failcount = 0
+  while failcount < 15:
+    dbgmsg("retrieving " + url)
+    try:
+      r = requests.get(url)
+      if r.status_code == 200:
+        try:
+          ret = json.loads(r.text)
+        except JSONDecodeError as e:
+          dbgmsg("failed to decode json, giving up on " + url)
+          return False
+        return ret
+      elif r.status_code == 429:
+        dbgmsg("hit the rate limiting, waiting 5 seconds...")
+        failcount += 1
+        time.sleep(5)
+      elif r.status_code == 400:
+        dbgmsg("got 400, that was most likely a private account, giving up on " + url) 
+        return False
+      else:
+        dbgmsg("got " + str(r.status_code) + ", will keep trying a few times...")
+        failcount += 1
+        time.sleep(1)
+    except:
+      e = sys.exc_info()[0]
+      dbgmsg("request failed with: " + str(e) + ", will keep trying a few times...")
+      failcount += 1
+      time.sleep(1)
+  dbgmsg("too many errors, giving up on " + url)
+  return False
+
+
 def getprofile(username):
   global db
-  global debug
   userurl = 'https://gab.ai/users/' + username
-  done = False
-  while not done:
-    if debug:
-      print("retrieving " + userurl)
-    r = requests.get(userurl)
-    if r.status_code == 200:
-      profile = json.loads(r.text)
-      gabber = Gabber(id = profile['id'], username = profile['username'])
-      try:
-        db.profiles.insert_one(profile)
-      except pymongo.errors.WriteError as e:
-        print("skipping " + username + " - already mined")
-        return False
-      done = True
-      return gabber
-    elif r.status_code == 429:
-      if debug:
-        print("hit the rate limiting, waiting 5 seconds...")
-      time.sleep(5)
-    else:
-      print("failed to mine " + username + " - call to " + userurl + " returned: " + str(r.status_code))
-      done = True
+  profile = getfromgab(userurl)
+  if profile:
+    gabber = Gabber(id = profile['id'], username = profile['username'])
+    try:
+      db.profiles.insert_one(profile)
+    except pymongo.errors.WriteError as e:
+      dbgmsg("skipping " + username + " - already mined")
       return False
+    return gabber
+  else:
+    print("FAILURE: failed to scrape profile for " + username)
+    return False
 
 
 def getfollowers(username):
   global db
-  global debug
   followers = []
   length = 1
   before = 0
   while length > 0:
     followerurl = 'https://gab.ai/users/' + username + '/followers?before=' + str(before)
-    if debug:
-      print("retrieving " + followerurl)
-    r = requests.get(followerurl)
-    if r.status_code == 200:
-      followerset = json.loads(r.text)
+    followerset = getfromgab(followerurl)
+    if followerset:
       length = len(followerset['data'])
       before += length
       for follower in followerset['data']:
@@ -63,34 +90,23 @@ def getfollowers(username):
         try:
           db.discovered.insert_one(follower)
         except pymongo.errors.WriteError as e:
-          if debug:
-            print("error adding discovered follower account " + follower['username'] + " : " + str(e))
+          dbgmsg("error adding discovered follower account " + follower['username'] + " : " + str(e))
         followers.append(gabber)
-    elif r.status_code == 429:
-      if debug:
-        print("hit the rate limiting, waiting 5 seconds...")
-      length = 30
-      before -= 30 
-      time.sleep(5)
     else:
-      print("failed to mine followers for " + username + " - call to " + followerurl + " returned: " + str(r.status_code))
+      print("FAILURE: could not mine followers for " + username)
       return False
   return followers
 
 
 def getfollowing(username):
   global db
-  global debug
   following = []
   length = 1
   before = 0
   while length > 0:
     followingurl = 'https://gab.ai/users/' + username + '/following?before=' + str(before)
-    if debug:
-      print("retrieving " + followingurl)
-    r = requests.get(followingurl)
-    if r.status_code == 200:
-      followingset = json.loads(r.text)
+    followingset = getfromgab(followingurl)
+    if followingset:
       length = len(followingset['data'])
       before += length
       for follows in followingset['data']:
@@ -98,99 +114,72 @@ def getfollowing(username):
         try:
           db.discovered.insert_one(follows)
         except pymongo.errors.WriteError as e:
-          if debug:
-            print("error adding discovered following account " + follows['username'] + " : " + str(e))
+          dbgmsg("error adding discovered following account " + follows['username'] + " : " + str(e))
         following.append(gabber)
-    elif r.status_code == 429:
-      if debug:
-        print("hit the rate limiting, waiting 5 seconds...")
-      length = 30
-      before -= 30
-      time.sleep(5)
     else:
-      print("failed to mine followers for " + username + " - call to " + followingurl + " returned: " + str(r.status_code))
+      print("FAILURE: could not mine following for " + username)
       return False
   return following
 
 
 def gettimeline(username):
   global db
-  global debug
   before = False
   nomore = False
   while nomore == False:
     feedurl = 'https://gab.ai/api/feed/' + username
     if before:
       feedurl = 'https://gab.ai/api/feed/' + username + '?before=' + before
-    if debug:
-      print("retrieving " + feedurl)
-    r = requests.get(feedurl)
-    if r.status_code == 200:
-      contentset = json.loads(r.text)
+    contentset = getfromgab(feedurl)
+    if contentset:
       nomore = contentset['no-more']
+      if len(contentset['data']) == 0:
+        nomore = True
       for content in contentset['data']:
         try:
           db.posts.insert_one(content)
           if content['post']['reply_count'] > 0:
             getcomments(content['post']['id'])
         except pymongo.errors.WriteError as e:
-          if debug:
-            print("error storing post " + str(content['post']['id']) + " backend returned: " + str(e))
+          dbgmsg("error storing post " + str(content['post']['id']) + " backend returned: " + str(e))
         if content['post']['is_quote'] and 'parent' in content['post']:
           try:
             db.discovered.insert_one(content['post']['parent']['user'])
           except pymongo.errors.WriteError as e:
-            if debug:
-              print("error adding discovered quoting account " + content['post']['parent']['user']['username'] + " backend returned: " + str(e))
+            dbgmsg("error adding discovered quoting account " + content['post']['parent']['user']['username'] + " backend returned: " + str(e))
         before = content['published_at']
-    elif r.status_code == 429:
-      if debug:
-        print("hit the rate limiting, waiting 5 seconds...")
-      time.sleep(5)
     else:
-      print("failed to scrape timeline at " + feedurl + " , call got status: " + str(r.status_code))
+      print("FAILURE: failed to scrape timeline for " + username)
       return False
   return True
 
 
 def getcomments(post):
   global db
-  global debug
-  feedurl = 'https://gab.ai/posts/' + str(post) + '/comments/index?limit=1000'
+  commentsurl = 'https://gab.ai/posts/' + str(post) + '/comments/index?limit=1000'
   done = False
-  while not done:
-    if debug:
-      print("retrieving " + feedurl)
-    r = requests.get(feedurl)
-    if r.status_code == 200:
-      comments = json.loads(r.text)
-      for comment in comments['data']:
+  comments = getfromgab(commentsurl)
+  if comments:
+    for comment in comments['data']:
+      try:
+        db.comments.insert_one(comment)
         try:
-          db.comments.insert_one(comment)
-          try:
-            db.discovered.insert_one(comment['user'])
-          except pymongo.errors.WriteError as e:
-            if debug:
-              print("error adding discovered commenting account " + comment['user']['username'] + " backend returned: " + str(e))
-          if comment['reply_count'] > 0:
-            getcomments(comment['id'])
+          db.discovered.insert_one(comment['user'])
         except pymongo.errors.WriteError as e:
-          if debug:
-            print("error adding comment " + str(comment['id']) + " backend returned: " + str(e))
-      done = True
-    elif r.status_code == 429:
-      if debug:
-        print("hit the rate limiting, waiting 5 seconds...")
-      time.sleep(5)
-    else:
-      print("failed to scrape comments at " + feedurl + " , call got status: " + str(r.status_code))
-      return False
+          dbgmsg("error adding discovered commenting account " + comment['user']['username'] + " backend returned: " + str(e))
+        if comment['reply_count'] > 0:
+          getcomments(comment['id'])
+      except pymongo.errors.WriteError as e:
+        dbgmsg("error adding comment " + str(comment['id']) + " backend returned: " + str(e))
+    return True
+  else:
+    dbgmsg("failed to scrape comments from " + commentsurl)
+    return False
   return True
 
 
 def minegabber(username):
   global db
-  global debug
   gabber = getprofile(username)
   if gabber:
     print("now scraping " + username)
@@ -203,16 +192,14 @@ def minegabber(username):
         try:
           db.followers.insert_one(edge)
         except pymongo.errors.WriteError as e:
-          if debug:
-            print("error adding follower edge, backend gave us: " + str(e))
+          dbgmsg("error adding follower edge, backend gave us: " + str(e))
     if following:
       for follower in following:
         edge = { "follower_id": gabber.id, "follower_username": gabber.username, "following_id": follower.id, "following_username": follower.username }
         try:
           db.followers.insert_one(edge)
         except pymongo.errors.WriteError as e:
-          if debug:
-            print("error adding follower edge, backend gave us: " + str(e))
+          dbgmsg("error adding follower edge, backend gave us: " + str(e))
 
 
 def getall():
@@ -237,11 +224,11 @@ def main(argv):
   try:
     opts, args = getopt.getopt(argv,"hadu:")
   except getopt.GetoptError:
-    print('parsegabber.py [ -adh ] [ -u <username> ]')
+    print('minegab.py [ -adh ] [ -u <username> ]')
     sys.exit(2)
   for opt, arg in opts:
     if opt == '-h':
-      print('parsegabber.py [ -adh ] [ -u <username> ]')
+      print('minegab.py [ -adh ] [ -u <username> ]')
       sys.exit()
     if opt == '-a':
       shouldgetall = True

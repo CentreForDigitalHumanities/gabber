@@ -11,7 +11,10 @@ On a debian system, run:
 
 ### Scraping
 
-The minegab.py script is meant for scraping data from the gab.ai platform.
+The minegab.py script is meant for scraping data from the gab.ai platform. All scraped data is stored in MongoDB for further parsing/analysis.
+
+#### Usage
+
 Scraping data from gab.ai starts at a particular account, whose username has to be manually provided to the script:
 
     ./minegab.py -u <username>
@@ -26,6 +29,15 @@ The minegab.py will give verbose output with the -d flag. Note that this might c
 
     export PYTHONIOENCODING=UTF-8
     ./minegab.py -da
+
+#### Limitations
+
+The minegab.py script can not scrape beyond the giant graph of which the manually provided accounts are a part. It will not find other communities if they are completely isolated from the accounts provided to the script.
+
+Furthermore, the minegab.py script does not retrieve any media content. It will store links to media assets in the database, which could be used as an input for a downloading script, but this functionality is not provided by the script. Note that scraping all media content will require considerable bandwidth and storage capacity.
+
+Finally, the 'news' and 'groups' sections of gab are ignored entirely.
+
 
 ### Processing
 
