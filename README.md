@@ -24,11 +24,19 @@ Once the first account has been processed, the -a parameter will tell the script
 
     ./minegab.py -a
 
-Keep running the script with -a untill no new accounts are discovered. The giant graph within gab.ai has now been scraped.
+Keep running the script with -a until no new accounts are discovered. The giant graph within gab.ai has now been scraped.
 The minegab.py will give verbose output with the -d flag. Note that this might contain special characters that could be problematic to print on your terminal:
 
     export PYTHONIOENCODING=UTF-8
     ./minegab.py -da
+
+To keep a logfile of the scraping, you could use the following command:
+
+    ./minegab.py -a | tee -a ./scrapelog.txt
+
+#### Performance
+
+Performance will increase when multiple scrapers are run simultaneously. Ideally, the scrapers would use different outbound IP addresses to decrease the impact of rate-limiting, but performance is already greatly improved when running multiple scrapes from the same node. Note that running scrapers from multiple nodes requires replication of the MongoDB backend.
 
 #### Limitations
 
