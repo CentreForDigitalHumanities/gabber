@@ -34,6 +34,14 @@ To keep a logfile of the scraping, you could use the following command:
 
     ./minegab.py -a | tee -a ./scrapelog.txt
 
+To redo scraping of accounts, first remove the account from the profiles collection, and then scrape it again:
+
+    ./minegab.py -d <username> ; ./minegab.py -u <username>
+
+To scrape the news section, simply run:
+
+    ./minegab.py -n
+
 #### Performance
 
 Performance will increase when multiple scrapers are run simultaneously. Ideally, the scrapers would use different outbound IP addresses to decrease the impact of rate-limiting, but performance is already greatly improved when running multiple scrapes from the same node. Note that running scrapers from multiple nodes requires replication of the MongoDB backend.
@@ -44,7 +52,7 @@ The minegab.py script can not scrape beyond the giant graph of which the manuall
 
 Furthermore, the minegab.py script does not retrieve any media content. It will store links to media assets in the database, which could be used as an input for a downloading script, but this functionality is not provided by the script. Note that scraping all media content will require considerable bandwidth and storage capacity.
 
-Finally, the 'news' and 'groups' sections of gab are ignored entirely.
+Finally, the 'groups' section of gab is mostly ignored. Group metadata is shown in the posts, but group membership is not scraped.
 
 
 ### Processing

@@ -29,15 +29,17 @@ def showhelp():
 
   # a generic function to print how to use this program
 
-  print("usage: minegab.py [-a] [-d] [-h] [-u <username>]")
+  print("usage: minegab.py [-a] [-h] [-v] [-u <username>] [-d <username>]")
   print("")
   print("minegab.py is a scraper. It is part of the Gabber toolset for analysing gab.ai")
   print("See https://github.com/nomennesc-io/gabber")
   print("")
   print("arguments:")
   print("  -a             scrape all discovered accounts")
-  print("  -d             print extra debug output")
   print("  -h             show this help message")
+  print("  -n             scrape all the newsitems")
+  print("  -v             verbose: print debug output")
+  print("  -d <username>  delete the scraped profile of <username>")
   print("  -u <username>  start by scraping <username>")
   print("")
 
@@ -374,6 +376,42 @@ def getall():
       minegabber(discovered['username'])
 
 
+def getridof(user):
+  global db
+
+  # removes an account from the scraped profiles, allowing it to be scraped again
+
+  try:
+    db.profiles.delete_one({'username':user})
+    print("removed user " + user)
+  except pymongo.errors.WriteError as e:
+    print("error removing user profile " + user + ": " + str(e))
+
+
+def getnews():
+  global db
+
+  # fetches the news items published on gab
+
+  newsurl="https://gab.ai/api/articles"
+  latestnews = getfromgab(newsurl)
+  if latestnews:
+    counter = int(latestnews['data'][0]['id'])
+    dbgmsg("highest found: " + str(counter))
+    while counter > 0:
+      articleurl = newsurl + '/' + str(counter)
+      news = getfromgab(articleurl)
+      if news:
+        try:
+          db.news.insert_one(news)
+        except pymongo.errors.WriteError as e:
+          dbgmsg("error adding news item, backend gave us: " + str(e))
+      counter -= 1
+    print("fetched all the news!")
+  else:
+    print("FAILURE: couldn't fetch news")
+
+
 def main(argv):
   global db
   global debug
@@ -386,6 +424,7 @@ def main(argv):
 
   db.profiles.create_index('id', unique=True)
   db.discovered.create_index('id', unique=True)
+  db.news.create_index('id', unique=True)
   db.followers.create_index([('follower_id',1),('following_id',1)], unique=True)
   db.posts.create_index([('post.actuser.id',1),('post.id',1),('post.type',1)], unique=True)
   db.comments.create_index([('id',1),('user.id',1)], unique=True)
@@ -395,8 +434,10 @@ def main(argv):
   shouldgetall = False
   username = False
   debug = False
+  delete = False
+  shouldgetnews = False
   try:
-    opts, args = getopt.getopt(argv,"hadu:")
+    opts, args = getopt.getopt(argv,"ahnvd:u:")
   except getopt.GetoptError:
     showhelp()
     sys.exit(2)
@@ -406,8 +447,12 @@ def main(argv):
       sys.exit()
     if opt == '-a':
       shouldgetall = True
-    if opt == '-d':
+    if opt == '-n':
+      shouldgetnews = True
+    if opt == '-v':
       debug = True
+    if opt in ("-d"):
+      delete = arg
     if opt in ("-u"):
       username = arg
   
@@ -417,6 +462,10 @@ def main(argv):
     minegabber(username)
   if(shouldgetall):
     getall()
+  if(delete):
+    getridof(delete)
+  if(shouldgetnews):
+    getnews()
 
 
 if __name__ == "__main__":
