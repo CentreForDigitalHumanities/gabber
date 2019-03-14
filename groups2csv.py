@@ -36,7 +36,7 @@ def main(argv):
   outfile = "gabgroups.csv"
 
   try:
-    opts, args = getopt.getopt(argv,"rh")
+    opts, args = getopt.getopt(argv,"ho:")
   except getopt.GetoptError:
     showhelp()
     sys.exit(2)
@@ -44,7 +44,7 @@ def main(argv):
     if opt == '-h':
       showhelp()
       sys.exit()
-    if opt == '-o':
+    if opt in ('-o'):
       outfile = arg
 
   # setting up the database
