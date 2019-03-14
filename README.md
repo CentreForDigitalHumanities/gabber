@@ -57,4 +57,17 @@ Finally, the 'groups' section of gab is mostly ignored. Group metadata is shown 
 
 ### Processing
 
-TBD.
+#### Groups
+
+The gabgroups.py script will gather all group metadata found in the scraped posts and fill a mongo collection named groups. It will also add a post count to the metadata.
+
+By default, gabgroups.py will only consider original posts. Use the -r parameter to also include reposts in the gathering of groups and counting of posts.
+
+
+### Exporting
+
+#### Groups
+
+The groups2csv.py will export group metadata to a csv file. Use -o <filename> to export to a specific filename, by default the export will be written to gabgroups.csv.
+
+The format of the export is comma separated and single quote delimited CSV.
