@@ -68,6 +68,14 @@ By default, gabgroups.py will only consider original posts. Use the -r parameter
 
 #### Groups
 
-The groups2csv.py will export group metadata to a csv file. Use -o <filename> to export to a specific filename, by default the export will be written to gabgroups.csv.
+The groups2csv.py script will export group metadata to a csv file. Use -o <filename> to export to a specific filename, by default the export will be written to gabgroups.csv.
 
 The format of the export is comma separated and single quote delimited CSV.
+
+#### Hashtags
+
+The gabhashtags.py script will export a sorted list of all hashtags used in posts and comments on gab, including a count of how often they were used. Use -o <filename> to export to a specific filename, by default the export will be written to gabhashtags.csv.
+
+The format of the export is comma separated and single quote delimited CSV.
+
+Note that no weighing is applied in the hashtag count.
