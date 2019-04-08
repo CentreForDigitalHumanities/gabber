@@ -66,6 +66,10 @@ By default, gabgroups.py will only consider original posts. Use the -r parameter
 
 ### Exporting
 
+#### Activity
+
+The gabactivity.py script will export a CSV with counts of total active users, total amount of posts, total amount of reposts, and total amount of comments per month. Use -o <filename> to export to a specific filename, by default the export will be written to gabactivity.csv.
+
 #### Groups
 
 The groups2csv.py script will export group metadata to a csv file. Use -o <filename> to export to a specific filename, by default the export will be written to gabgroups.csv.

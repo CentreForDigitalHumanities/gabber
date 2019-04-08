@@ -7,8 +7,7 @@ import csv
 from pymongo import *
 
 #
-# this tool exports group data from the mongodb to csv.
-# make sure to run gabgroups.py first!
+# this tool exports hashtags from the mongodb to csv.
 # it is part of the Gabber toolset.
 # see https://github.com/nomennesc-io/gabber
 #
