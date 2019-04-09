@@ -70,6 +70,17 @@ By default, gabgroups.py will only consider original posts. Use the -r parameter
 
 The gabactivity.py script will export a CSV with counts of total active users, total amount of posts, total amount of reposts, and total amount of comments per month. Use -o <filename> to export to a specific filename, by default the export will be written to gabactivity.csv.
 
+#### GraphML
+
+The gabgraph.py script will export to a GraphML file for further processing with for instance iGraph or (if you have a powerful desktop) Gephi. It supports 4 different edge types: follow edges, repost edges, quote edges, and comment edges.
+Run:
+
+    ./gabgraph.py -h
+
+To see all possible parameters. 
+
+Note that the language attribute is taken from Gab itself, take these values with a grain of salt.
+
 #### Groups
 
 The groups2csv.py script will export group metadata to a csv file. Use -o <filename> to export to a specific filename, by default the export will be written to gabgroups.csv.
