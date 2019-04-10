@@ -8,7 +8,7 @@ from pymongo import *
 #
 # this tool collects group data from scraped posts from gab.ai. 
 # it is part of the Gabber toolset.
-# see https://github.com/nomennesc-io/gabber
+# see https://github.com/utrecht-data-school/gabber
 #
 
 def showhelp():
@@ -18,7 +18,7 @@ def showhelp():
   print("usage: gabgroups.py [-h] [-r]")
   print("")
   print("gabgroups.py collects group data from scraped posts.")
-  print("See https://github.com/nomennesc-io/gabber")
+  print("See https://github.com/utrecht-data-school/gabber")
   print("")
   print("arguments:")
   print("  -h             show this help message")

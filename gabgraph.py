@@ -10,7 +10,7 @@ from pymongo import *
 #
 # this tool exports a follower-network in graphml from scraped data from gab.ai. 
 # it is part of the Gabber toolset.
-# see https://github.com/nomennesc-io/gabber
+# see https://github.com/utrecht-data-school/gabber
 #
 
 def mkheader(directed,postedges,adddate,addlang):

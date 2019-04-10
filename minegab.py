@@ -10,7 +10,7 @@ from pymongo import *
 
 #
 # this is a scraper for gab.ai, part of the Gabber toolset
-# see https://github.com/nomennesc-io/gabber
+# see https://github.com/utrecht-data-school/gabber
 #
 # to follow the execution flow, read from bottom to top
 #
@@ -32,7 +32,7 @@ def showhelp():
   print("usage: minegab.py [-a] [-h] [-v] [-u <username>] [-d <username>]")
   print("")
   print("minegab.py is a scraper. It is part of the Gabber toolset for analysing gab.ai")
-  print("See https://github.com/nomennesc-io/gabber")
+  print("See https://github.com/utrecht-data-school/gabber")
   print("")
   print("arguments:")
   print("  -a             scrape all discovered accounts")

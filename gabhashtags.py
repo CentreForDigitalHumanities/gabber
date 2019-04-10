@@ -9,7 +9,7 @@ from pymongo import *
 #
 # this tool exports hashtags from the mongodb to csv.
 # it is part of the Gabber toolset.
-# see https://github.com/nomennesc-io/gabber
+# see https://github.com/utrecht-data-school/gabber
 #
 
 def showhelp():
@@ -19,7 +19,7 @@ def showhelp():
   print("usage: gabhashtags.py [-h] [-o <filename>]")
   print("")
   print("gabhashtags.py collects hashtags from scraped posts and comments.")
-  print("See https://github.com/nomennesc-io/gabber")
+  print("See https://github.com/utrecht-data-school/gabber")
   print("")
   print("arguments:")
   print("  -h             show this help message")

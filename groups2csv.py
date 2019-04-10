@@ -10,7 +10,7 @@ from pymongo import *
 # this tool exports group data from the mongodb to csv.
 # make sure to run gabgroups.py first!
 # it is part of the Gabber toolset.
-# see https://github.com/nomennesc-io/gabber
+# see https://github.com/utrecht-data-school/gabber
 #
 
 def showhelp():
@@ -21,7 +21,7 @@ def showhelp():
   print("")
   print("groups2csv.py collects group data from scraped posts.")
   print("make sure to run gabgroups.py before exporting.")
-  print("See https://github.com/nomennesc-io/gabber")
+  print("See https://github.com/utrecht-data-school/gabber")
   print("")
   print("arguments:")
   print("  -h             show this help message")
