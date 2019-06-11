@@ -7,7 +7,8 @@ This repository aims to provide a set of tools for data-driven media studies on 
 These tools require python3 and access to a MongoDB server.
 On a debian system, run:
 
-    sudo apt-get install python3-pymongo python3-igraph mongodb-server
+    sudo apt-get install python3-pymongo python3-igraph python3-nltk python3-scipy mongodb-server
+    pip3 install hatesonar gensim pyLDAvis
 
 ### Scraping
 
@@ -54,7 +55,6 @@ Furthermore, the minegab.py script does not retrieve any media content. It will 
 
 Finally, the 'groups' section of gab is mostly ignored. Group metadata is shown in the posts, but group membership is not scraped.
 
-
 ### Processing
 
 #### Communities
@@ -73,12 +73,25 @@ If the -n parameter is given, user profiles in the mongodb will be enriched with
 
 If the -o parameter is given, an output directory will be created and graphml files for each detected community will be written in this directory. The filenames match the 'id' field written to mongodb if the -n parameter was given.
 
+Once you are done with all community detection, run the com2posts.py to copy the community metadata from the profiles collection to the actuser attribute of every post and the user attribute of every comment.
+
 #### Groups
 
 The gabgroups.py script will gather all group metadata found in the scraped posts and fill a mongo collection named groups. It will also add a post count to the metadata.
 
 By default, gabgroups.py will only consider original posts. Use the -r parameter to also include reposts in the gathering of groups and counting of posts.
 
+#### Hatespeech
+
+The gabhate.py script uses the [HateSonar](https://github.com/Hironsan/HateSonar) to detect hate- and offsensive speech in all english posts and comments. Other languages are not supported. Classification and confidence is stored in the hateometer attribute in all affected posts and comments.
+
+#### Topics
+
+The gabtopics.py script uses LDA modelling to generate topics for a specific community. It will output plaintext as well as generate a visualisation in HTML. Be sure to have run com2posts.py first. Usage:
+
+    ./gabtopics.py -l [language] -e [edgetype] -c [community id] -t [number of topics] -o [output file]
+
+Currently only english, dutch, and german are supported. Note that running this script on larger communities will require serious computational resources, in particular lots of memory.
 
 ### Exporting
 
@@ -110,3 +123,7 @@ The gabhashtags.py script will export a sorted list of all hashtags used in post
 The format of the export is comma separated and single quote delimited CSV.
 
 Note that no weighing is applied in the hashtag count.
+
+#### Hate statistics
+
+The gabhatestats.py script will output statistics on the overall amount of hate- and offensive speech detected by the gabhate.py script, as well as statistics per community detected in the gabcommunities.py script. Beware these statistics only account for english posts and comments.
