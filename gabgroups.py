@@ -2,7 +2,7 @@
 
 import json
 import sys
-import getopt
+import argparse
 from pymongo import *
 
 #
@@ -11,38 +11,15 @@ from pymongo import *
 # see https://github.com/utrecht-data-school/gabber
 #
 
-def showhelp():
-
-  # a generic function to print how to use this program
-
-  print("usage: gabgroups.py [-h] [-r]")
-  print("")
-  print("gabgroups.py collects group data from scraped posts.")
-  print("See https://github.com/utrecht-data-school/gabber")
-  print("")
-  print("arguments:")
-  print("  -h             show this help message")
-  print("  -r             include reposts, by default only original posts are counted")
-  print("")
-
-
 def main(argv):
 
   # getting command line parameters
 
-  reposts = False
+  parser = argparse.ArgumentParser()
 
-  try:
-    opts, args = getopt.getopt(argv,"rh")
-  except getopt.GetoptError:
-    showhelp()
-    sys.exit(2)
-  for opt, arg in opts:
-    if opt == '-h':
-      showhelp()
-      sys.exit()
-    if opt == '-r':
-      reposts = True
+  parser.add_argument('-r','--reposts', dest='reposts', help='Include reposts as edges in the graph', action='store_true', required=False, default=False)
+
+  args = parser.parse_args()
 
   # setting up the database
 
@@ -55,7 +32,7 @@ def main(argv):
 
   # depending on whether we include reposts, either find everything with group metadata, or just the original posts
 
-  if reposts:
+  if args.reposts:
     groups = db.posts.find({'post.group':{"$exists":1}},{'post.group':1}, no_cursor_timeout=True)
   else:
     groups = db.posts.find({'type':'post','post.group':{"$exists":1}},{'post.group':1}, no_cursor_timeout=True)

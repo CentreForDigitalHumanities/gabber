@@ -63,6 +63,7 @@ def main(argv):
       s.write_graphml(outfile)
 
     if args.comname:
+      # adding our findings to the user profile in mongodb
       comname = 'communities.' + args.comname
       for node in s.vs:
         obj = {}

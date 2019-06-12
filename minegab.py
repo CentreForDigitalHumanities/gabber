@@ -3,7 +3,7 @@
 import requests
 import json
 import sys
-import getopt
+import argparse
 import time
 import pymongo
 from pymongo import *
@@ -23,25 +23,6 @@ class Gabber:
     self.id = id
     self.username = username
     self.private = False
-
-
-def showhelp():
-
-  # a generic function to print how to use this program
-
-  print("usage: minegab.py [-a] [-h] [-v] [-u <username>] [-d <username>]")
-  print("")
-  print("minegab.py is a scraper. It is part of the Gabber toolset for analysing gab.ai")
-  print("See https://github.com/utrecht-data-school/gabber")
-  print("")
-  print("arguments:")
-  print("  -a             scrape all discovered accounts")
-  print("  -h             show this help message")
-  print("  -n             scrape all the newsitems")
-  print("  -v             verbose: print debug output")
-  print("  -d <username>  delete the scraped profile of <username>")
-  print("  -u <username>  start by scraping <username>")
-  print("")
 
 
 def dbgmsg(e):
@@ -431,40 +412,27 @@ def main(argv):
 
   # setting defaults and parsing the command line arguments
 
-  shouldgetall = False
-  username = False
-  debug = False
-  delete = False
-  shouldgetnews = False
-  try:
-    opts, args = getopt.getopt(argv,"ahnvd:u:")
-  except getopt.GetoptError:
-    showhelp()
-    sys.exit(2)
-  for opt, arg in opts:
-    if opt == '-h':
-      showhelp()
-      sys.exit()
-    if opt == '-a':
-      shouldgetall = True
-    if opt == '-n':
-      shouldgetnews = True
-    if opt == '-v':
-      debug = True
-    if opt in ("-d"):
-      delete = arg
-    if opt in ("-u"):
-      username = arg
+  parser = argparse.ArgumentParser()
+  
+  parser.add_argument('-a','--all', dest='getall', help='Scrape all discovered users', action='store_true', required=False, default=False)
+  parser.add_argument('-n','--news', dest='getnews', help='Scrape the news items', action='store_true', required=False, default=False)
+  parser.add_argument('-v','--verbose', dest='verbose', help='Give verbose output', action='store_true', required=False, default=False)
+  parser.add_argument('-d','--delete', dest='delete', help='Delete the specified user profile from the database', type=str, required=False, nargs='?', default=False)
+  parser.add_argument('-u','--user', dest='username', help='Scrape the specified user', type=str, required=False, nargs='?', default=False)
+
+  args = parser.parse_args()
+
+  debug = args.verbose
   
   # and start scraping
 
-  if(username):
-    minegabber(username)
-  if(shouldgetall):
+  if(args.username):
+    minegabber(args.username)
+  if(args.getall):
     getall()
-  if(delete):
-    getridof(delete)
-  if(shouldgetnews):
+  if(args.delete):
+    getridof(args.delete)
+  if(args.getnews):
     getnews()
 
 

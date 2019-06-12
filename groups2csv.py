@@ -2,7 +2,7 @@
 
 import json
 import sys
-import getopt
+import argparse
 import csv
 from pymongo import *
 
@@ -13,39 +13,16 @@ from pymongo import *
 # see https://github.com/utrecht-data-school/gabber
 #
 
-def showhelp():
-
-  # a generic function to print how to use this program
-
-  print("usage: groups2csv.py [-h] [-o <filename>]")
-  print("")
-  print("groups2csv.py collects group data from scraped posts.")
-  print("make sure to run gabgroups.py before exporting.")
-  print("See https://github.com/utrecht-data-school/gabber")
-  print("")
-  print("arguments:")
-  print("  -h             show this help message")
-  print("  -o <filename>  the output filename, default is gabgroups.csv")
-  print("")
-
-
 def main(argv):
 
   # getting command line parameters
 
-  outfile = "gabgroups.csv"
+  parser = argparse.ArgumentParser()
 
-  try:
-    opts, args = getopt.getopt(argv,"ho:")
-  except getopt.GetoptError:
-    showhelp()
-    sys.exit(2)
-  for opt, arg in opts:
-    if opt == '-h':
-      showhelp()
-      sys.exit()
-    if opt in ('-o'):
-      outfile = arg
+  parser.add_argument('-o','--output', dest='output', help='Set the output csv file', type=str, required=False, nargs='?', default='gabgroups.csv')
+  args = parser.parse_args()
+
+  outfile = args.output
 
   # setting up the database
 

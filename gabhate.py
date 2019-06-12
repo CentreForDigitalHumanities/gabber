@@ -14,6 +14,7 @@ from hatesonar import Sonar
 def hateometer(msg):
   global sonar
 
+  # run the hatesonar and store the results in obj
   indication = sonar.ping(text=msg)
   obj = {}
   for speech in indication['classes']:
@@ -42,13 +43,17 @@ def main(argv):
 
   print("hateometing the posts...")
 
+  # loop over all english posts
   for post in db.posts.find({'post.language':'en'}, no_cursor_timeout=True):
+    # run hate detection on the post body
     obj = hateometer(post['post']['body'])
     postid = post['_id']
+    # store the results in mongodb
     db.posts.update_one({'_id':postid},{"$set":{'post.hateometer':obj}})
 
   print("hateometing the comments...")
 
+  # do the same trick for the comments
   for comment in db.comments.find({'language':'en'}, no_cursor_timeout=True):
     obj = hateometer(comment['body'])
     commentid = comment['_id']

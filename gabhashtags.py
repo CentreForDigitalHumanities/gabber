@@ -2,7 +2,7 @@
 
 import sys
 import re
-import getopt
+import argparse
 import csv
 from pymongo import *
 
@@ -11,21 +11,6 @@ from pymongo import *
 # it is part of the Gabber toolset.
 # see https://github.com/utrecht-data-school/gabber
 #
-
-def showhelp():
-
-  # a generic function to print how to use this program
-
-  print("usage: gabhashtags.py [-h] [-o <filename>]")
-  print("")
-  print("gabhashtags.py collects hashtags from scraped posts and comments.")
-  print("See https://github.com/utrecht-data-school/gabber")
-  print("")
-  print("arguments:")
-  print("  -h             show this help message")
-  print("  -o <filename>  the output filename, default is gabhashtags.csv")
-  print("")
-
 
 def extracthashtags(message):
   global allhashtags
@@ -58,19 +43,12 @@ def main(argv):
 
   # getting command line parameters
 
-  outfile = "gabhashtags.csv"
+  parser = argparse.ArgumentParser()
 
-  try:
-    opts, args = getopt.getopt(argv,"ho:")
-  except getopt.GetoptError:
-    showhelp()
-    sys.exit(2)
-  for opt, arg in opts:
-    if opt == '-h':
-      showhelp()
-      sys.exit()
-    if opt in ('-o'):
-      outfile = arg
+  parser.add_argument('-o','--output', dest='output', help='Set the output csv file', type=str, required=False, nargs='?', default='gabhashtags.csv')
+  args = parser.parse_args()
+
+  outfile = args.output
 
   # setting up the database
 
