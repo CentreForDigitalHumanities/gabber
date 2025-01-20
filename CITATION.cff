@@ -1,0 +1,22 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Gabber
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - name: Utrecht University Data School
+    address: Drift 13
+    city: Utrecht
+    country: NL
+    post-code: 3512 BR
+    email: dataschool@uu.nl
+    website: 'https://dataschool.nl/'
+repository-code: 'https://github.com/CentreForDigitalHumanities/gabber'
+abstract: >-
+  A set of tools for data-driven media studies on the gab.ai
+  platform.
+license: GPL-3.0
